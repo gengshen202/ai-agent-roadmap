@@ -1,0 +1,12 @@
+# 密钥：绝对不能提交
+key.txt
+
+# 虚拟环境（几千个文件，提交会非常慢）
+venv/
+
+# PyCharm 配置
+.idea/
+
+# Python 缓存
+__pycache__/
+*.pyc
