@@ -5,20 +5,30 @@ with open("key.txt", "r", encoding="utf-8") as f:
 
 client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
-messages = []  # ← 新增：对话历史
+messages = []
 
 while True:
     q = input("\n你：")
     if q in ("q", "退出"):
         break
 
-    messages.append({"role": "user", "content": q})  # ← 存下你说的话
+    messages.append({"role": "user", "content": q})
 
-    r = client.chat.completions.create(
+    stream = client.chat.completions.create(
         model="deepseek-chat",
-        messages=messages,  # ← 改这里：发全部历史
+        messages=messages,
+        stream=True,          # ← 关键：不是等全部生成完
     )
 
-    answer = r.choices[0].message.content
-    messages.append({"role": "assistant", "content": answer})  # ← 存下它的回答
-    print("AI：" + answer)
+    print("AI：", end="", flush=True)
+    answer = ""
+    for chunk in stream:                       # ← 服务器一小段一小段往回吐
+        if not chunk.choices:
+            continue
+        piece = chunk.choices[0].delta.content
+        if piece:
+            answer += piece
+            print(piece, end="", flush=True)   # ← flush 让它立刻显示，不攒着
+    print()
+
+    messages.append({"role": "assistant", "content": answer})
